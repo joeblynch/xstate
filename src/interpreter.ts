@@ -19,6 +19,7 @@ import {
   DisposeActivityFunction,
   ErrorExecutionEvent,
   StateValue,
+  DevToolsConnect,
   InterpreterOptions,
   ActivityDefinition,
   SingleOrArray
@@ -930,18 +931,27 @@ export class Interpreter<
     }
   }
   private attachDev() {
-    if (
-      this.options.devTools &&
-      typeof window !== 'undefined' &&
-      (window as any).__REDUX_DEVTOOLS_EXTENSION__
-    ) {
-      this.devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect({
+    let connect: DevToolsConnect | null = null;
+
+    if (this.options.devTools === true && typeof window !== 'undefined') {
+      const { __REDUX_DEVTOOLS_EXTENSION__ } = (window as any);
+      if (__REDUX_DEVTOOLS_EXTENSION__) {
+        connect = __REDUX_DEVTOOLS_EXTENSION__.connect.bind(__REDUX_DEVTOOLS_EXTENSION__);
+      }
+    } else if (typeof this.options.devTools === 'function') {
+      connect = this.options.devTools;
+    }
+
+    if (connect) {
+      const defaultOptions = {
         name: this.id,
         features: {
           jump: false,
           skip: false
         }
-      });
+      };
+
+      this.devTools = connect({ ...defaultOptions, ...this.options.devToolsOptions });
       this.devTools.init(this.state);
     }
   }

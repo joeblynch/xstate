@@ -881,6 +881,8 @@ export interface StateSchema {
   states?: Record<string | number, StateSchema>;
 }
 
+export type DevToolsConnect = (options?: any) => any;
+
 export interface InterpreterOptions {
   /**
    * Whether state actions should be executed immediately upon transition. Defaults to `true`.
@@ -903,8 +905,15 @@ export interface InterpreterOptions {
   id?: string;
   /**
    * If `true`, states and events will be logged to Redux DevTools.
+   * Can also be set to a compatible dev tool's `connect` function, such as from `remotedev`.
    *
    * Default: `false`
    */
-  devTools: boolean;
+  devTools: boolean | DevToolsConnect;
+
+  /**
+   * When `devTools` is `true` or a `function`, options to pass to the `connect` function.
+   * For example, `{ port: 8000 }` when using `remotedev` to connect to a local `redux-devtools-cli` server.
+   */
+  devToolsOptions?: object;
 }
